@@ -1,4 +1,4 @@
-# Babel Plugin to Cache Zod Schemas for Performance Optimization
+# Babel Plugin to Cache Zod Schemas
 
 Automatically transforms [Zod](https://zod.dev/) schema definitions into cached versions to improve performance by preventing re-initialization, i.e.,
 
