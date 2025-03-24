@@ -4,6 +4,11 @@ import { type Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
 import { createHash } from 'node:crypto';
 
+export type BuildZodSchema = (
+  hash: string,
+  buildZodSchema: () => t.ObjectExpression,
+) => t.ObjectExpression;
+
 const calculateLocationHash = (filename: string, loc: t.SourceLocation) => {
   return createHash('sha256')
     .update(

@@ -56,15 +56,19 @@ Add the plugin to your Babel configuration:
 After you install the plugin, you have to define the `_buildZodSchema` helper in your project.
 
 ```ts
-global._buildZodSchema = (hash: string, buildZodSchema: () => ZodSchema) => {}
+import { type BuildZodSchema } from 'babel-plugin-zod';
+
+global._buildZodSchema: BuildZodSchema = (hash, buildZodSchema) => {}
 ```
 
 Example:
 
 ```ts
+import { type BuildZodSchema } from 'babel-plugin-zod';
+
 const zodSchemaCache: Record<string, unknown> = {};
 
-global._buildZodSchema = (hash: string, buildZodSchema: () => ZodSchema) => {
+global._buildZodSchema: BuildZodSchema = (hash, buildZodSchema) => {
   if (zodSchemaCache[uid]) {
     return zodSchemaCache[uid];
   }
