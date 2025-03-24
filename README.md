@@ -53,29 +53,32 @@ Add the plugin to your Babel configuration:
 }
 ```
 
-After you install the plugin, you have to define the `buildZodSchema` helper in your project.
+After you install the plugin, you have to define the `_buildZodSchema` helper in your project, which you can do using the `defineBuildZodSchema` helper.
 
 ```ts
-import { buildZodSchema } from 'babel-plugin-zod/helper';
+import { defineBuildZodSchema } from 'babel-plugin-zod/helper';
 
-buildZodSchema((hash, buildZodSchema) => {});
+defineBuildZodSchema((hash, build) => {});
 ```
 
 You have to do this once in your project, i.e. in your entry file.
 
+> [!NOTE]
+> Alternatively, you can just define a `global._buildZodSchema` variable and skip the `defineBuildZodSchema` helper.
+
 Example:
 
 ```ts
-import { buildZodSchema } from 'babel-plugin-zod/helper';
+import { defineBuildZodSchema } from 'babel-plugin-zod/helper';
 
 const zodSchemaCache: Record<string, unknown> = {};
 
-buildZodSchema((hash, buildZodSchema) => {
+defineBuildZodSchema((hash, build) => {
   if (zodSchemaCache[uid]) {
     return zodSchemaCache[uid];
   }
 
-  zodSchemaCache[uid] = buildZodSchema();
+  zodSchemaCache[uid] = build();
 
   return zodSchemaCache[uid];
 });
@@ -86,12 +89,12 @@ buildZodSchema((hash, buildZodSchema) => {
 [`zod-accelerator`](https://www.npmjs.com/package/@duplojs/zod-accelerator) is a library that allows you to accelerate Zod schemas, and it can make a very big difference in performance. However, instrumenting every instance of `z.object()` is not practical. This plugin helps you to do that automatically.
 
 ```ts
-import { buildZodSchema } from 'babel-plugin-zod/helper';
+import { defineBuildZodSchema } from 'babel-plugin-zod/helper';
 import { ZodAccelerator } from '@duplojs/zod-accelerator';
 
 const zodSchemaCache: Record<string, unknown> = {};
 
-buildZodSchema((uid: string, build: () => z.ZodTypeAny) => {
+defineBuildZodSchema((uid: string, build: () => z.ZodTypeAny) => {
   if (zodSchemaCache[uid]) {
     return zodSchemaCache[uid];
   }

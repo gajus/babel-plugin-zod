@@ -1,6 +1,6 @@
 import { type z } from 'zod';
 
-export const buildZodSchema = (
+export const defineBuildZodSchema = (
   build: (hash: string, buildZodSchema: () => z.ZodTypeAny) => void,
 ) => {
   // eslint-disable-next-line canonical/id-match
