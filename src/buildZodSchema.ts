@@ -5,11 +5,10 @@ import * as t from '@babel/types';
 import { createHash } from 'node:crypto';
 
 export const buildZodSchema = (
-  hash: string,
-  build: () => t.ObjectExpression,
+  build: (hash: string, buildZodSchema: () => t.ObjectExpression) => void,
 ) => {
   // eslint-disable-next-line canonical/id-match
-  global._buildZodSchema = buildZodSchema(hash, build);
+  global._buildZodSchema = build;
 };
 
 const calculateLocationHash = (filename: string, loc: t.SourceLocation) => {
