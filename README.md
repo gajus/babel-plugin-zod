@@ -58,17 +58,17 @@ After you install the plugin, you have to define the `_buildZodSchema` helper in
 ```ts
 import { type BuildZodSchema } from 'babel-plugin-zod';
 
-global._buildZodSchema: BuildZodSchema = (hash, buildZodSchema) => {}
+global._buildZodSchema = buildZodSchema((hash, buildZodSchema) => {});
 ```
 
 Example:
 
 ```ts
-import { type BuildZodSchema } from 'babel-plugin-zod';
+import { buildZodSchema } from 'babel-plugin-zod';
 
 const zodSchemaCache: Record<string, unknown> = {};
 
-global._buildZodSchema: BuildZodSchema = (hash, buildZodSchema) => {
+global._buildZodSchema = buildZodSchema((hash, buildZodSchema) => {
   if (zodSchemaCache[uid]) {
     return zodSchemaCache[uid];
   }
@@ -76,7 +76,7 @@ global._buildZodSchema: BuildZodSchema = (hash, buildZodSchema) => {
   zodSchemaCache[uid] = buildZodSchema();
 
   return zodSchemaCache[uid];
-};
+});
 ```
 
 ### Combining it with `zod-accelerator`
