@@ -41,5 +41,31 @@ pluginTester({
       `,
       title: 'does not transform z.object() inside existing _buildZodSchema',
     },
+    {
+      code: multiline`
+        const schema = z.object({
+          name: z.string(),
+          nested: z.object({
+            foo: z.string(),
+            bar: z.number(),
+          }),
+        });
+      `,
+      output: multiline`
+        const schema = _buildZodSchema(
+          "9328f27e5ba0f8474eb620a7bdc90396f6d18ac92f2969666e95b43cff6f961b",
+          () => {
+            return z.object({
+              name: z.string(),
+              nested: z.object({
+                foo: z.string(),
+                bar: z.number(),
+              }),
+            });
+          }
+        );
+      `,
+      title: 'only transforms top-level z.object() calls (ignores nested)',
+    },
   ],
 });

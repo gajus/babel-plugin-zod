@@ -35,18 +35,38 @@ export default declare((api) => {
       }
 
       // Check if this z.object() is already inside a _buildZodSchema call
+      // or inside another z.object call
       let currentPath = path.parentPath;
-      while (currentPath) {
-        // If we're already inside a return statement inside an arrow function inside _buildZodSchema,
-        // then we don't need to transform this node
+      let isInsideZObject = false;
+      let isInsideBuildZodSchema = false;
+
+      while (currentPath && !isInsideZObject && !isInsideBuildZodSchema) {
+        // Check if we're inside a _buildZodSchema call
         if (
           currentPath.isCallExpression() &&
           t.isIdentifier(currentPath.node.callee, { name: '_buildZodSchema' })
         ) {
-          return;
+          isInsideBuildZodSchema = true;
+          break;
+        }
+
+        // Check if we're inside another z.object call
+        if (
+          currentPath.isCallExpression() &&
+          t.isMemberExpression(currentPath.node.callee) &&
+          t.isIdentifier(currentPath.node.callee.object, { name: 'z' }) &&
+          t.isIdentifier(currentPath.node.callee.property, { name: 'object' })
+        ) {
+          isInsideZObject = true;
+          break;
         }
 
         currentPath = currentPath.parentPath;
+      }
+
+      // Skip transformation if the node is already inside _buildZodSchema or another z.object
+      if (isInsideBuildZodSchema || isInsideZObject) {
+        return;
       }
 
       // Get the location information
@@ -71,7 +91,7 @@ export default declare((api) => {
 
       // Replace the old node with the new one
       path.replaceWith(newNode);
-      path.skip(); // Still skip processing the children to be safe
+      path.skip(); // Skip processing the children to avoid infinite recursion
     },
   };
 
