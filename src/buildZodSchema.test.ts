@@ -16,7 +16,9 @@ pluginTester({
         _buildZodSchema(
           "c1c2373eb425b16698f3f429aabce7df0b6ac8aa6b33c81dae70f2fa64b29815",
           () => {
-            return z.object;
+            return z.object({
+              bar: z.text(),
+            });
           }
         );
       `,

@@ -16,7 +16,7 @@ export default declare((api) => {
   api.assertVersion(7);
 
   const visitor: Visitor = {
-    CallExpression(path) {
+    CallExpression(path, state) {
       // Check if it's a MemberExpression (something.something())
       const callee = path.node.callee;
 
@@ -24,31 +24,44 @@ export default declare((api) => {
         return;
       }
 
-      if (
-        !t.isIdentifier(callee.object, { name: 'z' }) ||
-        !t.isIdentifier(callee.property, { name: 'object' })
-      ) {
+      // Check if the object is 'z'
+      if (!t.isIdentifier(callee.object, { name: 'z' })) {
         return;
+      }
+
+      // Check if the property is 'object'
+      if (!t.isIdentifier(callee.property, { name: 'object' })) {
+        return;
+      }
+
+      // Check if this z.object() is already inside a _buildZodSchema call
+      let currentPath = path.parentPath;
+      while (currentPath) {
+        // If we're already inside a return statement inside an arrow function inside _buildZodSchema,
+        // then we don't need to transform this node
+        if (
+          currentPath.isCallExpression() &&
+          t.isIdentifier(currentPath.node.callee, { name: '_buildZodSchema' })
+        ) {
+          return;
+        }
+
+        currentPath = currentPath.parentPath;
       }
 
       // Get the location information
       const loc = path.node.loc;
-
       if (!loc) {
         return;
       }
 
-      const locationHash = calculateLocationHash(
-        this.filename ?? 'unknown',
-        loc,
-      );
+      const filename = state.filename || 'unknown';
+      const locationHash = calculateLocationHash(filename, loc);
 
-      // Create the new function expression that wraps the original argument
-      // const originalArgument = path.node.arguments[0];
-
+      // Create the arrow function that wraps the original z.object call
       const wrappedArgument = t.arrowFunctionExpression(
         [],
-        t.blockStatement([t.returnStatement(callee)]),
+        t.blockStatement([t.returnStatement(path.node)]),
       );
 
       const newNode = t.callExpression(t.identifier('_buildZodSchema'), [
@@ -58,11 +71,12 @@ export default declare((api) => {
 
       // Replace the old node with the new one
       path.replaceWith(newNode);
+      path.skip(); // Still skip processing the children to be safe
     },
   };
 
   return {
-    name: 'build-zod-schema',
+    name: 'babel-plugin-zod',
     visitor,
   };
 });
