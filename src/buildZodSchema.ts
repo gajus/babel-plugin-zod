@@ -7,8 +7,9 @@ import { createHash } from 'node:crypto';
 export const buildZodSchema = (
   hash: string,
   build: () => t.ObjectExpression,
-): t.ObjectExpression => {
-  return buildZodSchema(hash, build);
+) => {
+  // eslint-disable-next-line canonical/id-match
+  global._buildZodSchema = buildZodSchema(hash, build);
 };
 
 const calculateLocationHash = (filename: string, loc: t.SourceLocation) => {
