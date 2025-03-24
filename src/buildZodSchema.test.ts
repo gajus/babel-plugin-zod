@@ -24,5 +24,22 @@ pluginTester({
       `,
       title: 'replaces z.object() with _buildZodSchema()',
     },
+    {
+      code: multiline`
+        _buildZodSchema("existing-hash", () => {
+          return z.object({
+            bar: z.text(),
+          });
+        });
+      `,
+      output: multiline`
+        _buildZodSchema("existing-hash", () => {
+          return z.object({
+            bar: z.text(),
+          });
+        });
+      `,
+      title: 'does not transform z.object() inside existing _buildZodSchema',
+    },
   ],
 });
