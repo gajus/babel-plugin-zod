@@ -3,14 +3,6 @@ import { type Visitor } from '@babel/traverse';
 // eslint-disable-next-line id-length
 import * as t from '@babel/types';
 import { createHash } from 'node:crypto';
-import { type z } from 'zod';
-
-export const buildZodSchema = (
-  build: (hash: string, buildZodSchema: () => z.ZodTypeAny) => void,
-) => {
-  // eslint-disable-next-line canonical/id-match
-  global._buildZodSchema = build;
-};
 
 const calculateLocationHash = (filename: string, loc: t.SourceLocation) => {
   return createHash('sha256')

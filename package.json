@@ -32,6 +32,10 @@
     ".": {
       "import": "./dist/buildZodSchema.js",
       "types": "./dist/buildZodSchema.d.ts"
+    },
+    "./helper": {
+      "import": "./dist/helper.js",
+      "types": "./dist/helper.d.ts"
     }
   },
   "files": [
