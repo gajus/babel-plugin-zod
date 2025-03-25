@@ -34,17 +34,29 @@ export default declare((api) => {
         return;
       }
 
-      // Check if this z.object() is already inside a _buildZodSchema call
+      // Check if this z.object() is already inside a globalThis._buildZodSchema call
       // or inside another z.object call
       let currentPath = path.parentPath;
       let isInsideZObject = false;
       let isInsideBuildZodSchema = false;
 
       while (currentPath && !isInsideZObject && !isInsideBuildZodSchema) {
-        // Check if we're inside a _buildZodSchema call
+        // Check if we're inside a globalThis._buildZodSchema call
         if (
           currentPath.isCallExpression() &&
-          t.isIdentifier(currentPath.node.callee, { name: '_buildZodSchema' })
+          t.isMemberExpression(currentPath.node.callee) &&
+          t.isIdentifier(currentPath.node.callee.property, {
+            name: '_buildZodSchema',
+          }) &&
+          // Direct globalThis._buildZodSchema
+          (t.isIdentifier(currentPath.node.callee.object, {
+            name: 'globalThis',
+          }) ||
+            // In case it's represented differently in the AST
+            (t.isMemberExpression(currentPath.node.callee.object) &&
+              t.isIdentifier(currentPath.node.callee.object.property, {
+                name: 'globalThis',
+              })))
         ) {
           isInsideBuildZodSchema = true;
           break;
@@ -64,7 +76,7 @@ export default declare((api) => {
         currentPath = currentPath.parentPath;
       }
 
-      // Skip transformation if the node is already inside _buildZodSchema or another z.object
+      // Skip transformation if the node is already inside globalThis._buildZodSchema or another z.object
       if (isInsideBuildZodSchema || isInsideZObject) {
         return;
       }
@@ -84,7 +96,13 @@ export default declare((api) => {
         t.blockStatement([t.returnStatement(path.node)]),
       );
 
-      const newNode = t.callExpression(t.identifier('_buildZodSchema'), [
+      // Create globalThis._buildZodSchema member expression
+      const buildZodSchemaMemberExpr = t.memberExpression(
+        t.identifier('globalThis'),
+        t.identifier('_buildZodSchema'),
+      );
+
+      const newNode = t.callExpression(buildZodSchemaMemberExpr, [
         t.stringLiteral(locationHash),
         wrappedArgument,
       ]);

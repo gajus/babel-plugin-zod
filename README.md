@@ -13,7 +13,7 @@ z.object({
 Becomes this:
 
 ```ts
-_buildZodSchema(
+globalThis._buildZodSchema(
   "8598d15279bd5e3eb41ae6d074d6b70568579dff7a7d27f096162eb373c1b344",
   () => {
     return z.object({
@@ -64,7 +64,7 @@ defineBuildZodSchema((hash, build) => {});
 You have to do this once in your project, i.e. in your entry file.
 
 > [!NOTE]
-> Alternatively, you can just define a `global._buildZodSchema` variable and skip the `defineBuildZodSchema` helper.
+> Alternatively, you can just define a `globalThis._buildZodSchema` variable and skip the `defineBuildZodSchema` helper.
 
 Example:
 

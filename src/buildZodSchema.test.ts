@@ -13,7 +13,7 @@ pluginTester({
         });
       `,
       output: multiline`
-        _buildZodSchema(
+        globalThis._buildZodSchema(
           "c1c2373eb425b16698f3f429aabce7df0b6ac8aa6b33c81dae70f2fa64b29815",
           () => {
             return z.object({
@@ -26,14 +26,14 @@ pluginTester({
     },
     {
       code: multiline`
-        _buildZodSchema("existing-hash", () => {
+        globalThis._buildZodSchema("existing-hash", () => {
           return z.object({
             bar: z.text(),
           });
         });
       `,
       output: multiline`
-        _buildZodSchema("existing-hash", () => {
+        globalThis._buildZodSchema("existing-hash", () => {
           return z.object({
             bar: z.text(),
           });
@@ -52,7 +52,7 @@ pluginTester({
         });
       `,
       output: multiline`
-        const schema = _buildZodSchema(
+        const schema = globalThis._buildZodSchema(
           "9328f27e5ba0f8474eb620a7bdc90396f6d18ac92f2969666e95b43cff6f961b",
           () => {
             return z.object({
