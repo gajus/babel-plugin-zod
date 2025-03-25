@@ -21,6 +21,7 @@
   "include": [
     "src",
     "testSetup.ts",
+    "eslint.config.ts",
     "vitest.config.ts"
   ]
 }
