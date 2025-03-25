@@ -1,4 +1,4 @@
-import auto from 'eslint-config-canonical/auto';
+import auto from 'eslint-config-canonical/dist/configurations/auto';
 
 export default [
   ...auto,
