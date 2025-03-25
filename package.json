@@ -63,6 +63,7 @@
     "lint:tsc": "tsc",
     "test:vitest": "vitest --run --passWithNoTests"
   },
+  "type": "module",
   "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }
