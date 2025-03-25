@@ -26,6 +26,103 @@ pluginTester({
     },
     {
       code: multiline`
+        const schema1 = z.object({ a: z.string() });
+        const schema2 = z.object({ b: z.number() });
+      `,
+      output: multiline`
+        const schema1 = globalThis._buildZodSchema(
+          "57a076ef0f2fdfa31b30763a801dbe37081ae4b797887221e969fb1de3e80336",
+          () => {
+            return z.object({
+              a: z.string(),
+            });
+          }
+        );
+        const schema2 = globalThis._buildZodSchema(
+          "5509c4d2f307e994ab04c0f17a361f7e34902352db6728039c50bbb3093eeea9",
+          () => {
+            return z.object({
+              b: z.number(),
+            });
+          }
+        );
+      `,
+      title: 'handles multiple z.object instances in the same file',
+    },
+    {
+      code: multiline`
+        const result = z.object({ a: z.string() }).parse(input);
+      `,
+      output: multiline`
+        const result = globalThis
+          ._buildZodSchema(
+            "29cf1d02b9ec7ac8b8c012ed363f46cb7b049488b47edbc0dbf1a5925128e0db",
+            () => {
+              return z.object({
+                a: z.string(),
+              });
+            }
+          )
+          .parse(input);
+      `,
+      title: 'handles z.object in method chains',
+    },
+    {
+      code: multiline`
+        z.object({
+          outer: z.string(),
+          nested: z.object({
+            inner: z.number()
+          }).optional(),
+        });
+      `,
+      output: multiline`
+        globalThis._buildZodSchema(
+          "d2064353ee7fca2b2a801a2120af429c397cffed9d97872051aa6aef1f3b1081",
+          () => {
+            return z.object({
+              outer: z.string(),
+              nested: z
+                .object({
+                  inner: z.number(),
+                })
+                .optional(),
+            });
+          }
+        );
+      `,
+      title: 'handles z.object with nested z.object and chained methods',
+    },
+    {
+      code: multiline`
+        const obj = someOtherLib.object({ a: 1 });
+        const notZ = notZ.object({ b: 2 });
+      `,
+      output: multiline`
+        const obj = someOtherLib.object({
+          a: 1,
+        });
+        const notZ = notZ.object({
+          b: 2,
+        });
+      `,
+      title: 'does not transform non-z.object calls',
+    },
+    {
+      code: multiline`
+        const zodLib = z;
+        const schema = zodLib.object({ a: z.string() });
+      `,
+      output: multiline`
+        const zodLib = z;
+        const schema = zodLib.object({
+          a: z.string(),
+        });
+      `,
+      title: 'does not transform when z is referenced through another variable',
+    },
+    {
+      code: multiline`
         globalThis._buildZodSchema("existing-hash", () => {
           return z.object({
             bar: z.text(),
