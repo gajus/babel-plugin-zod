@@ -164,5 +164,28 @@ pluginTester({
       `,
       title: 'only transforms top-level z.object() calls (ignores nested)',
     },
+    {
+      code: multiline`
+        const PersonZodObject = z.object({ name: z.string() });
+        
+        const schema = z.object({
+          person: PersonZodObject,
+        });
+      `,
+      output: multiline`
+        const PersonZodObject = globalThis._buildZodSchema(
+          "2dbec3f5a819b8517fc5a0a136c58507ddb7801d70d3e0cb5549fad881c7bcdd",
+          () => {
+            return z.object({
+              name: z.string(),
+            });
+          }
+        );
+        const schema = z.object({
+          person: PersonZodObject,
+        });
+      `,
+      title: 'does not transform z.object() that references external variables',
+    },
   ],
 });

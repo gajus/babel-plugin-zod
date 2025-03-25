@@ -81,6 +81,100 @@ export default declare((api) => {
         return;
       }
 
+      // Check if there are any non-z variable references within the z.object definition
+      // First, make sure we have arguments
+      if (path.node.arguments.length === 0) {
+        return;
+      }
+
+      // Expect the first argument to be an object expression
+      const firstArg = path.node.arguments[0];
+      if (!t.isObjectExpression(firstArg)) {
+        return; // Skip if first arg is not an object
+      }
+      
+      // Function to check if a node is z-related
+      const isZRelated = (node) => {
+        // Direct z reference like z.string()
+        if (
+          t.isCallExpression(node) && 
+          t.isMemberExpression(node.callee) && 
+          t.isIdentifier(node.callee.object, { name: 'z' })
+        ) {
+          // Check arguments for non-z references
+          for (const arg of node.arguments) {
+            if (!isZRelated(arg) && !t.isLiteral(arg)) {
+              return false;
+            }
+          }
+          return true;
+        }
+        
+        // Nested z.object calls
+        if (
+          t.isCallExpression(node) && 
+          t.isMemberExpression(node.callee) && 
+          t.isCallExpression(node.callee.object)
+        ) {
+          return isZRelated(node.callee.object);
+        }
+        
+        // Allow chained methods on z objects like z.object().optional()
+        if (
+          t.isCallExpression(node) && 
+          t.isMemberExpression(node.callee)
+        ) {
+          return isZRelated(node.callee.object);
+        }
+        
+        // Allow literals (strings, numbers, booleans)
+        if (t.isLiteral(node)) {
+          return true;
+        }
+        
+        // For object expressions (like in nested schemas), check all properties
+        if (t.isObjectExpression(node)) {
+          return node.properties.every(prop => {
+            if (t.isObjectProperty(prop)) {
+              return isZRelated(prop.value);
+            }
+            if (t.isSpreadElement(prop)) {
+              return isZRelated(prop.argument);
+            }
+            return false;
+          });
+        }
+        
+        // Any other type of node is considered non-z
+        return false;
+      };
+      
+      // Check each property in the z.object for non-z references
+      let hasNonZReferences = false;
+      
+      for (const prop of firstArg.properties) {
+        if (t.isObjectProperty(prop)) {
+          if (!isZRelated(prop.value)) {
+            hasNonZReferences = true;
+            break;
+          }
+        } else if (t.isSpreadElement(prop)) {
+          if (!isZRelated(prop.argument)) {
+            hasNonZReferences = true;
+            break;
+          }
+        } else {
+          // For any other property type, be conservative and skip transformation
+          hasNonZReferences = true;
+          break;
+        }
+      }
+      
+      // Skip transformation if non-z references are found
+      if (hasNonZReferences) {
+        return;
+      }
+
       // Get the location information
       const loc = path.node.loc;
       if (!loc) {
