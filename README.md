@@ -94,12 +94,31 @@ import { ZodAccelerator } from '@duplojs/zod-accelerator';
 
 const zodSchemaCache: Record<string, unknown> = {};
 
-defineBuildZodSchema((uid: string, build: () => z.ZodTypeAny) => {
+defineBuildZodSchema((uid, build) => {
   if (zodSchemaCache[uid]) {
     return zodSchemaCache[uid];
   }
 
-  zodSchemaCache[uid] = ZodAccelerator.build(build()) as unknown as z.ZodTypeAny;
+  const zodSchema = build();
+
+  try {
+    const acceleratedZodSchema = ZodAccelerator.build(zodSchema);
+
+    // This works around the fact that accelerated zod schemas cannot be extended, e.g. FooZodSchema.nullable() is going to break.
+    // Therefore, we bind the accelerated methods to the original zod schema instance.
+    zodSchema.parse = acceleratedZodSchema.parse.bind(acceleratedZodSchema);
+    zodSchema.parseAsync =
+      acceleratedZodSchema.parseAsync.bind(acceleratedZodSchema);
+    zodSchema.safeParse =
+      acceleratedZodSchema.safeParse.bind(acceleratedZodSchema);
+    zodSchema.safeParseAsync =
+      acceleratedZodSchema.safeParseAsync.bind(acceleratedZodSchema);
+  } catch {
+    // This may happen if one of the descendants of the zod schema is an already accelerated zod schema.
+    // In this case, we just skip the acceleration.
+  }
+
+  zodSchemaCache[uid] = zodSchema;
 
   return zodSchemaCache[uid];
 });
