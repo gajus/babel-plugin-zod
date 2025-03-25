@@ -1,4 +1,4 @@
-import buildZodSchema from './buildZodSchema';
+import buildZodSchema from './buildZodSchema.js';
 import { pluginTester } from 'babel-plugin-tester';
 import multiline from 'multiline-ts';
 
