@@ -90,7 +90,7 @@ defineBuildZodSchema((hash, build) => {
 
 ```ts
 import { defineBuildZodSchema } from 'babel-plugin-zod/helper';
-import { ZodAccelerator } from '@duplojs/zod-accelerator';
+import ZodAccelerator from '@duplojs/zod-accelerator';
 
 const zodSchemaCache: Record<string, unknown> = {};
 
