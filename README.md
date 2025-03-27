@@ -37,6 +37,11 @@ By using a build helper with a hash of the location, we can avoid re-initializin
 - **Zero Mental Overhead**: Write normal Zod code - the caching happens automatically.
 - **No Code Changes Required**: Works with your existing codebase without modifications.
 
+## Limitations
+
+* only works with `z.object()`
+* only works with schemas that do not reference variables outside of the schema definition (e.g. `z.object({ person: PersonZodSchema })` is not supported)
+
 ## Installation
 
 ```bash
